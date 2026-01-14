@@ -59,6 +59,7 @@ h = RetinaHash.hash(img, method='phash', hash_size=16,
 
 ## License
 MIT – do what you want, just keep the copyright notice.
+See LICENSE file.
 
 ---
 
