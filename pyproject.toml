@@ -1,0 +1,78 @@
+[project]
+name = "retinahash"
+version = "0.1.0"
+description = "A lightweight Python library for perceptual image hashing, currently providing pHash with an extensible design."
+readme = "README.md"
+authors = [
+    { name = "Bryan Barcelona", email = "131413239+bryanbarcelona@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.2.6",
+]
+
+[project.scripts]
+retinahash = "retinahash:main"
+
+[build-system]
+requires = ["uv_build>=0.9.22,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "opencv-python>=4.12.0.88",
+    "pillow>=12.1.0",
+]
+
+[tool.ruff]
+preview = true
+line-length = 120
+target-version = "py312"
+extend-exclude = ["tests", "legacy", "reference.py"]
+fix = true
+
+[tool.ruff.lint]
+select = [
+  "ANN201", "ANN001", "F401"
+]
+ignore = [
+    "ANN001"
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["evergrain"]
+combine-as-imports = true
+force-wrap-aliases = true
+
+[tool.ruff.format]
+quote-style = "single"
+docstring-code-format = true
+[tool.pyright]
+exclude = [
+    ".venv",
+    "build"
+]
+
+ignore = [
+    "tests",
+    "reference.py",
+    "tester.py"
+]
+
+
+[tool.commitizen]
+version_provider = "uv"
+tag_format = "v${version}"
+major_version_zero = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple/"
+publish-url = "https://upload.pypi.org/legacy/"
+explicit = true
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true

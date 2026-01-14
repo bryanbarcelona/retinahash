@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version when calling workflow"
+        required: false
+        type: string
+  push:
+    branches: ["feature/**", "fix/**", "chore/**", "refactor/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJson(inputs.python-version || '["3.10","3.11","3.12","3.13"]') }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          key: uv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-py${{ matrix.python-version }}-
+            uv-${{ runner.os }}-
+          path: ~/.cache/uv
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev --frozen
+
+      # - name: Lint & format
+      #   run: uvx ruff check . && uvx ruff format . --check
+
+      # - name: Type check
+      #   run: uvx ty check .
+
+      - name: Check for tests
+        id: check_tests
+        run: |
+          if find tests -name "test_*.py" -o -name "*_test.py" | grep -q .; then
+            echo "has_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_tests=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Test + coverage
+        if: steps.check_tests.outputs.has_tests == 'true'
+        run: uv run pytest --cov=himmel --cov-report=xml
+
+      - name: Upload coverage
+        if: steps.check_tests.outputs.has_tests == 'true'
+        uses: codecov/codecov-action@v4
